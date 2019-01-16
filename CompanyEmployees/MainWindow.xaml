@@ -3,10 +3,123 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CompanyEmployees"
+        xmlns:viewmodel="clr-namespace:CompanyEmployees.ViewModel"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="MainWindow" MinHeight="450" MaxHeight="450" MinWidth="800" MaxWidth="800" d:DesignHeight="450"
+        x:Name="EmployeePage"
+        >
+    <Window.DataContext>
+        <viewmodel:EntityViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="Converter" />
+    </Window.Resources>
+    <Grid 
+        Margin="5"
+        HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="70*"/>
+            <ColumnDefinition Width="25*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="70*" />
+            <RowDefinition Height="30*" />
+            <RowDefinition Height="50" />
+        </Grid.RowDefinitions>
+        <Label 
+            Content="{StaticResource LabelDepartmentComboBox}" 
+            HorizontalAlignment="Left" Margin="10" VerticalAlignment="Center"
+            Width="Auto"
+            Grid.Column="0"
+            Grid.Row="0"
+            Grid.ColumnSpan="2"
+            />
+        <ComboBox 
+            ItemsSource="{Binding DepartmentCollection}" 
+            SelectedItem="{Binding SelectedDepartment}"
+            HorizontalAlignment="Left" Margin="130,12,0,12" VerticalAlignment="Center"
+            Width="155" Height="26"
+            Grid.Column="0"
+            Grid.Row="0"
+            />
+        <DataGrid 
+            ItemsSource="{Binding EmployeeCollection}"
+            SelectedItem="{Binding SelectedEmployee}"
+            IsReadOnly="True"
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            Margin="10" 
+            Grid.Column="0"
+            Grid.Row="1"
+            Grid.RowSpan="2"
+            />
+        <StackPanel
+            Visibility="{Binding DataContext.IsSelectedEmployeeEditable, ElementName=EmployeePage, 
+                Converter={StaticResource Converter}}"
+            DataContext="{Binding SelectedEmployee}"
+            Grid.Column="1"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            Margin="10"
+            >
+            <TextBlock Text="{StaticResource TextBoxSelectedEmployee}" 
+                       HorizontalAlignment="Center" FontWeight="Bold"
+                       />
+            <TextBlock HorizontalAlignment="Center" >
+                <Run Text="# " FontWeight="Bold" FontSize="10"/>
+                <Run Text="{Binding Id, Mode=OneWay}" FontWeight="Bold" FontSize="12"/>
+            </TextBlock>
+            <TextBlock Text="{StaticResource TextBoxEmployeeName}"/>
+            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Text="{StaticResource TextBoxEmployeeSurname}"/>
+            <TextBox Text="{Binding Surname, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Text="{StaticResource TextBoxEmployeeAge}" />
+            <TextBox Text="{Binding Age, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBlock Text="{StaticResource TextBoxEmployeeDepartment}" />
+            <TextBlock Text="{Binding Department, Mode=OneWay}"/>
+        </StackPanel>
+
+        <StackPanel
+            Visibility="{Binding Path=IsSelectedEmployeeEditable, Converter={StaticResource Converter}}"
+            Grid.Column="1"
+            Grid.Row="2"
+            Grid.RowSpan="2"
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            Margin="10"
+            >
+            <TextBlock HorizontalAlignment="Left" DataContext="{Binding SelectedEmployee}">
+                <Run Text="{StaticResource TextBoxMoveEmployee}" FontWeight="Bold" FontSize="10"/>
+                <Run Text="# " FontWeight="Bold" FontSize="10"/>
+                <Run Text="{Binding Id, Mode=OneWay}" FontWeight="Bold" FontSize="12"/>
+            </TextBlock>
+            <TextBlock Text="{StaticResource TextBoxEmployeeDepartment}" />
+            <ComboBox 
+                Name="ComboBoxMoveToDepartment"
+                ItemsSource="{Binding DepartmentCollection}"
+                SelectedItem="{Binding MoveToSelectedDepartment}"
+            />
+            <Button 
+                Command="{Binding MoveEmployeeCommand}"
+                Content="{StaticResource ButtonTextMoveEmployee}"
+                CommandParameter="{Binding ElementName=ComboBoxMoveToDepartment, Path=SelectedItem}"
+                Margin="0, 10, 0, 0" 
+                Padding="5" 
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Width="Auto"
+                Grid.Row="3"
+                />
+        </StackPanel>
+        <Button 
+            Command="{Binding AddEmployeeCommand}"
+            Content="{StaticResource ButtonTextAddEmployee}" 
+            Margin="5" 
+            Padding="5" 
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left"
+            Width="Auto"
+            Grid.Row="3"
+            />
     </Grid>
 </Window>
