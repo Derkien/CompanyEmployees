@@ -5,8 +5,6 @@ namespace CompanyEmployees.Entity.Repository
 {
     internal class EmployeeRepository
     {
-        private DepartmentRepository DepartmentRepository = new DepartmentRepository();
-
         public const string EmployeeNameAvatar = "Avatar";
         public const string EmployeeNameBabatar = "Babatar";
         public const string EmployeeNameGoga = "Goga";
@@ -30,25 +28,25 @@ namespace CompanyEmployees.Entity.Repository
                 EmployeeNameAvatar,
                 "Baba",
                 23,
-                DepartmentRepository.GetDepartmentByName(DepartmentRepository.DepartmentNameA))
+                DepartmentRepository.Instance.GetDepartmentByName(DepartmentRepository.DepartmentNameA))
                 );
             EmployeeList.Add(new Employee(
                 EmployeeNameBabatar,
                 "Gaga",
                 25,
-                DepartmentRepository.GetDepartmentByName(DepartmentRepository.DepartmentNameB))
+                DepartmentRepository.Instance.GetDepartmentByName(DepartmentRepository.DepartmentNameB))
                 );
             EmployeeList.Add(new Employee(
                 EmployeeNameGoga,
                 "Publishvili",
                 31,
-                DepartmentRepository.GetDepartmentByName(DepartmentRepository.DepartmentNameC))
+                DepartmentRepository.Instance.GetDepartmentByName(DepartmentRepository.DepartmentNameC))
                 );
             EmployeeList.Add(new Employee(
                 EmployeeNameZaza,
                 "Atata",
                 35,
-                DepartmentRepository.GetDepartmentByName(DepartmentRepository.DepartmentNameD))
+                DepartmentRepository.Instance.GetDepartmentByName(DepartmentRepository.DepartmentNameD))
                 );
 
             return EmployeeList;
@@ -69,6 +67,22 @@ namespace CompanyEmployees.Entity.Repository
             var DepartmentEmployees = from e in GetEmployees() where e.Department.Name == department.Name select e;
 
             return DepartmentEmployees;
+        }
+
+        /// <summary>
+        /// Singleton, while db not implemented 
+        /// </summary>
+        private static EmployeeRepository instance;
+        public static EmployeeRepository Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new EmployeeRepository();
+                }
+                return instance;
+            }
         }
     }
 }

@@ -30,17 +30,33 @@
         </Grid.RowDefinitions>
         <Label 
             Content="{StaticResource LabelDepartmentComboBox}" 
-            HorizontalAlignment="Left" Margin="10" VerticalAlignment="Center"
+            HorizontalAlignment="Left" Margin="10,12,0,12" VerticalAlignment="Center"
             Width="Auto"
             Grid.Column="0"
             Grid.Row="0"
-            Grid.ColumnSpan="2"
             />
         <ComboBox 
             ItemsSource="{Binding DepartmentCollection}" 
             SelectedItem="{Binding SelectedDepartment}"
+            DisplayMemberPath="Name"
             HorizontalAlignment="Left" Margin="130,12,0,12" VerticalAlignment="Center"
             Width="155" Height="26"
+            Grid.Column="0"
+            Grid.Row="0"
+            />
+        <Button 
+            Command="{Binding AddDepartmentCommand}"
+            Content="{StaticResource ButtonTextAddDepartment}" 
+            HorizontalAlignment="Left" Margin="440,12,0,0" 
+            VerticalAlignment="Top" Width="103" RenderTransformOrigin="0.44,0.15" Height="26"
+            Grid.Column="0"
+            Grid.Row="0"
+            />
+        <Button
+            Command="{Binding EditDepartmentCommand}"
+            Content="{StaticResource ButtonTextEditDepartment}" 
+            HorizontalAlignment="Left" Margin="291,12,0,0" 
+            VerticalAlignment="Top" Width="143" Height="26"
             Grid.Column="0"
             Grid.Row="0"
             />
@@ -98,6 +114,7 @@
                 Name="ComboBoxMoveToDepartment"
                 ItemsSource="{Binding DepartmentCollection}"
                 SelectedItem="{Binding MoveToSelectedDepartment}"
+                DisplayMemberPath="Name"
             />
             <Button 
                 Command="{Binding MoveEmployeeCommand}"

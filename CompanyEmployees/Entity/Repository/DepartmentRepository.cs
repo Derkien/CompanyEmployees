@@ -36,5 +36,26 @@ namespace CompanyEmployees.Entity.Repository
         {
             return GetDepartments().FirstOrDefault(d => d.Name == name);
         }
+
+        public void AddNewDepartment(Department department)
+        {
+            DepartmentList.Insert(0, department);
+        }
+
+        /// <summary>
+        /// Singleton, while db not implemented 
+        /// </summary>
+        private static DepartmentRepository instance;
+        public static DepartmentRepository Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new DepartmentRepository();
+                }
+                return instance;
+            }
+        }
     }
 }

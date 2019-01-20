@@ -2,6 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:CompanyEmployees"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="ButtonTextOk">OK</sys:String>
+    <sys:String x:Key="ButtonTextCancel">Cancel</sys:String>
+    
     <sys:String x:Key="ButtonTextAddEmployee">Add employee</sys:String>
     <sys:String x:Key="LabelDepartmentComboBox">Choose department</sys:String>
     <sys:String x:Key="TextBoxSelectedEmployee">Selected Employee</sys:String>
@@ -11,4 +14,9 @@
     <sys:String x:Key="TextBoxEmployeeDepartment">Department</sys:String>
     <sys:String x:Key="TextBoxMoveEmployee">Move employee</sys:String>
     <sys:String x:Key="ButtonTextMoveEmployee">Move employee</sys:String>
+    <sys:String x:Key="ButtonTextAddDepartment">Add department</sys:String>
+    <sys:String x:Key="ButtonTextEditDepartment">Edit selected department</sys:String>
+
+    <sys:String x:Key="TextBoxSelectedDepartment">Selected Department</sys:String>
+    <sys:String x:Key="TextBoxDepartmentName">Name</sys:String>
 </ResourceDictionary>
