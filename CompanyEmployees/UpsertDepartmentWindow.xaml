@@ -1,0 +1,43 @@
+﻿<Window x:Class="CompanyEmployees.UpsertDepartmentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewmodel="clr-namespace:CompanyEmployees.ViewModel"
+        mc:Ignorable="d"
+        Title="UpsertDepartmentWindow" 
+        MinWidth="300" MinHeight="200" 
+        MaxWidth="300" MaxHeight="200"
+        d:DesignHeight="200"
+        d:DesignWidth="300"
+        >
+    <StackPanel
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            Margin="10"
+            >
+        <TextBlock Text="{StaticResource TextBoxSelectedDepartment}" 
+                       HorizontalAlignment="Center" FontWeight="Bold"
+                       />
+        <TextBlock HorizontalAlignment="Center" >
+                <Run Text="# " FontWeight="Bold" FontSize="10"/>
+                <Run Text="{Binding Department.Id, Mode=OneWay}" FontWeight="Bold" FontSize="12"/>
+        </TextBlock>
+        <TextBlock Text="{StaticResource TextBoxEmployeeName}"/>
+        <TextBox 
+            Name="EmployeeNameTextBox"
+            Text="{Binding Department.Name, UpdateSourceTrigger=Explicit}"
+                 />
+        <Separator Height="20" Margin="0"/>
+        <Button
+            Command="{Binding OkButtonCommand}" 
+            Content="{StaticResource ButtonTextOk}"
+            CommandParameter="{Binding ElementName=EmployeeNameTextBox, Path=Text}"
+            Margin="5" 
+            />
+        <Button
+            Command="{Binding CancelButtonCommand}"
+            Content="{StaticResource ButtonTextCancel}"  
+            Margin="5" 
+            />
+    </StackPanel>
+</Window>
