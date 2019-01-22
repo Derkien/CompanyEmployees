@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using CompanyEmployees.Service;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 
 namespace CompanyEmployees.Entity.Repository
@@ -12,34 +16,89 @@ namespace CompanyEmployees.Entity.Repository
 
         private List<Department> DepartmentList;
 
+        private DepartmentRepository(DbManager dbManager)
+        {
+            DbManager = dbManager;
+
+            Adapter = new SqlDataAdapter();
+
+            DepartmentList = new List<Department>() { };
+        }
+
         /// <summary>
         /// Imitate request to db... Return all departments from db
         /// </summary>
         /// <returns></returns>
         public List<Department> GetDepartments()
         {
-            if (DepartmentList != null)
-            {
-                return DepartmentList;
-            }
+            var DataTable = new DataTable();
+            var SelectCommand = DbManager.CreateSqlCommand();
+            SelectCommand.CommandText = "SELECT * FROM Departments";
+            Adapter.SelectCommand = SelectCommand;
+            Adapter.Fill(DataTable);
 
-            DepartmentList = new List<Department>() { };
-            DepartmentList.Add(new Department(DepartmentNameA));
-            DepartmentList.Add(new Department(DepartmentNameB));
-            DepartmentList.Add(new Department(DepartmentNameC));
-            DepartmentList.Add(new Department(DepartmentNameD));
+            foreach (var item in DataTable.AsEnumerable())
+            {
+                DepartmentList.Add(
+                    new Department(
+                        (int)item["Id"],
+                        item["Name"].ToString()
+                    )
+                );
+            }
 
             return DepartmentList;
         }
 
         public Department GetDepartmentByName(string name)
         {
-            return GetDepartments().FirstOrDefault(d => d.Name == name);
+            var DataTable = new DataTable();
+            var SelectCommand = DbManager.CreateSqlCommand();
+            SelectCommand.CommandText = "SELECT * FROM Departments WHERE Name = @Name";
+            SelectCommand.Parameters.AddWithValue("@Name", name);
+            Adapter.SelectCommand = SelectCommand;
+            Adapter.Fill(DataTable);
+
+            if (DataTable.Rows.Count == 0)
+            {
+                throw new Exception($"Department with name: '{name}' not found");
+            }
+
+            DataRow row = DataTable.Rows[0];
+
+            return new Department((int)row["Id"], row["Name"].ToString());
         }
 
-        public void AddNewDepartment(Department department)
+        public Department GetDepartmentById(int id)
         {
-            DepartmentList.Insert(0, department);
+            var DataTable = new DataTable();
+            var SelectCommand = DbManager.CreateSqlCommand();
+            SelectCommand.CommandText = "SELECT * FROM Departments WHERE Id = @Id";
+            SelectCommand.Parameters.AddWithValue("@Id", id);
+            Adapter.SelectCommand = SelectCommand;
+            Adapter.Fill(DataTable);
+
+            if (DataTable.Rows.Count == 0)
+            {
+                throw new Exception($"Department with id: '{id}' not found");
+            }
+
+            DataRow row = DataTable.Rows[0];
+
+            return new Department((int)row["Id"], row["Name"].ToString());
+        }
+
+        public Department AddNewDepartment(Department department)
+        {
+            var InsertCommand = DbManager.CreateSqlCommand();
+            InsertCommand.CommandText = "INSERT INTO Departments(Name) VALUES(@Name); SET @Id = @@IDENTITY; SELECT SCOPE_IDENTITY()";
+            InsertCommand.Parameters.AddWithValue("@Name", department.Name);
+            var param = InsertCommand.Parameters.Add("@ID", SqlDbType.Int, 0, "ID");
+            param.Direction = ParameterDirection.Output;
+
+            var DepartmentId = DbManager.ExecuteScalar(InsertCommand);
+
+            return new Department(DepartmentId, department.Name);
         }
 
         /// <summary>
@@ -52,10 +111,14 @@ namespace CompanyEmployees.Entity.Repository
             {
                 if (instance == null)
                 {
-                    instance = new DepartmentRepository();
+                    instance = new DepartmentRepository(new DbManager("CompanyEmployees"));
                 }
                 return instance;
             }
         }
+
+        public DbManager DbManager { get; }
+
+        private SqlDataAdapter Adapter;
     }
 }

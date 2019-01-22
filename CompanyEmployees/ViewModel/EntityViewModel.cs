@@ -1,10 +1,13 @@
 ﻿using CompanyEmployees.Entity;
 using CompanyEmployees.Entity.Repository;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace CompanyEmployees.ViewModel
 {
@@ -21,6 +24,7 @@ namespace CompanyEmployees.ViewModel
 
         private ViewModelCommand _MoveEmployeeCommand;
         private ViewModelCommand _AddEmployeeCommand;
+        private ViewModelCommand _UpsertEmployeeCommand;
         private ViewModelCommand _AddDepartmentCommand;
         private ViewModelCommand _EditDepartmentCommand;
         private Employee _SelectedEmployee;
@@ -48,7 +52,7 @@ namespace CompanyEmployees.ViewModel
 
         private bool CanExecuteMoveEmployeeAction(object parameter)
         {
-            return MoveToSelectedDepartment != null && _SelectedEmployee != null;
+            return MoveToSelectedDepartment != null && SelectedEmployee != null && SelectedEmployee.Id > 0;
         }
 
         private void MoveEmployeeAction(object parameter)
@@ -62,11 +66,13 @@ namespace CompanyEmployees.ViewModel
                 return;
             }
 
-            _SelectedEmployee.Department = TargetDepartment;
-
+            SelectedEmployee.Department = TargetDepartment;
+            var UpdatedEmployee = EmployeeRepository.UpdateEmpoyee(SelectedEmployee);
             SelectedDepartment = TargetDepartment;
+            
+            SelectedEmployee = UpdatedEmployee;
 
-            MessageBox.Show($"Employee {_SelectedEmployee.Id} is moved! Switching view to {TargetDepartment.Name}...");
+            MessageBox.Show($"Employee {SelectedEmployee.Id} is moved! Switching view to {TargetDepartment.Name}...");
 
             OnPropertyChanged("SelectedEmployee");
         }
@@ -81,11 +87,82 @@ namespace CompanyEmployees.ViewModel
 
         private void AddEmployeeAction(object parameter)
         {
-            Employee Employee = new Employee("", "", 18, _SelectedDepartment);
-            EmployeeCollection.Insert(0, Employee);
-            EmployeeRepository.AddNewEmployee(Employee);
+            SelectedEmployee = new Employee("", "", 18, _SelectedDepartment);
+        }
 
-            SelectedEmployee = Employee;
+        private bool CanExecuteAddEmployeeAction(object parameter)
+        {
+            return _SelectedDepartment != null;
+        }
+
+        public ICommand UpsertEmployeeCommand
+        {
+            get
+            {
+                return _UpsertEmployeeCommand ?? (_UpsertEmployeeCommand = new ViewModelCommand(UpsertEmployeeAction, CanExecuteUpsertEmployeeAction));
+            }
+        }
+
+        private void UpsertEmployeeAction(object parameter)
+        {
+            var values = (object[])parameter;
+            var (name, surname, age, department, isValid, message) = ValidatedValues(values);
+
+            if (!isValid)
+            {
+                MessageBox.Show(message, "Data error", MessageBoxButton.OK);
+
+                return;
+            }
+
+            SelectedEmployee.Name = name;
+            SelectedEmployee.Surname = surname;
+            SelectedEmployee.Age = age;
+            SelectedEmployee.Department = department;
+
+            if (SelectedEmployee.Id > 0)
+            {
+                SelectedEmployee = EmployeeRepository.UpdateEmpoyee(SelectedEmployee);
+            }
+            else
+            {
+                SelectedEmployee = EmployeeRepository.AddNewEmployee(SelectedEmployee);
+            }
+
+            RefreshEmployeeCollection();
+        }
+
+        private (string name, string surname, int age, Department department, bool isValid, string message) ValidatedValues(object[] values)
+        {
+            var message = new StringBuilder();
+            var isValid = true;
+
+            var name = values[0].ToString();
+            if (name.Length == 0)
+            {
+                isValid = false;
+                message.AppendLine("Invalid name");
+            }
+            var surname = values[1].ToString();
+            if (surname.Length == 0)
+            {
+                isValid = false;
+                message.AppendLine("Invalid surname");
+            }
+
+            if (!int.TryParse(values[2].ToString(), out int age) || age < 18)
+            {
+                isValid = false;
+                message.AppendLine("Age cant be lower 18");
+            }
+            var department = values[3] as Department;
+
+            return (name, surname, age, department, isValid, message.ToString());
+        }
+
+        private bool CanExecuteUpsertEmployeeAction(object parameter)
+        {
+            return _SelectedEmployee != null;
         }
 
         public Employee SelectedEmployee
@@ -104,7 +181,14 @@ namespace CompanyEmployees.ViewModel
 
         private void RefreshEmployeeCollection()
         {
-            EmployeeCollection = new ObservableCollection<Employee>(EmployeeRepository.GetEmployeeByDepartment(_SelectedDepartment));
+            try
+            {
+                EmployeeCollection = new ObservableCollection<Employee>(EmployeeRepository.GetEmployeeByDepartment(_SelectedDepartment));
+            }
+            catch (Exception)
+            {
+                EmployeeCollection = new ObservableCollection<Employee>() { };
+            }
 
             OnPropertyChanged("EmployeeCollection");
         }
@@ -112,11 +196,6 @@ namespace CompanyEmployees.ViewModel
         public bool IsSelectedEmployeeEditable
         {
             get { return _SelectedEmployee != null; }
-        }
-
-        private bool CanExecuteAddEmployeeAction(object parameter)
-        {
-            return _SelectedDepartment != null;
         }
 
         #endregion
@@ -128,9 +207,35 @@ namespace CompanyEmployees.ViewModel
             get { return _SelectedDepartment; }
             set
             {
-                _SelectedDepartment = value;
-                OnPropertyChanged("SelectedDepartment");
+                var origValue = _SelectedDepartment;
 
+                if (value == _SelectedDepartment)
+                    return;
+
+                _SelectedDepartment = value;
+
+                if (SelectedEmployee != null && SelectedEmployee.Id == 0)
+                {
+                    var MessgeBoxResult = MessageBox.Show("You have unsaved data. Continue?", "Unsaved data", MessageBoxButton.OKCancel);
+                    if (MessgeBoxResult == MessageBoxResult.Cancel)
+                    {
+                        Application.Current.Dispatcher.BeginInvoke(
+                            new Action(() =>
+                            {
+                                _SelectedDepartment = origValue;
+                                OnPropertyChanged("SelectedDepartment");
+                            }),
+                            DispatcherPriority.ContextIdle,
+                            null
+                        );
+
+                        return;
+                    }
+
+                    SelectedEmployee = null;
+                }
+               
+                OnPropertyChanged("SelectedDepartment");
                 RefreshEmployeeCollection();
             }
         }
@@ -152,8 +257,7 @@ namespace CompanyEmployees.ViewModel
             if (UpsertDepartmentWindow.DialogResult == true)
             {
                 DepartmentCollection.Insert(0, Department);
-                DepartmentRepository.AddNewDepartment(Department);
-                SelectedDepartment = Department;
+                SelectedDepartment = DepartmentRepository.AddNewDepartment(Department);
             }
         }
 
@@ -201,7 +305,7 @@ namespace CompanyEmployees.ViewModel
 
         private void SaveChangesWindow(Department department)
         {
-            SelectedDepartment = department;
+            RefreshDepartmentCollection();
             UpsertDepartmentWindow.DialogResult = true;
         }
 
@@ -213,6 +317,13 @@ namespace CompanyEmployees.ViewModel
         private bool CanEditDepartmentAction(object parameter)
         {
             return _SelectedDepartment != null;
+        }
+
+        private void RefreshDepartmentCollection()
+        {
+            DepartmentCollection = new ObservableCollection<Department>(DepartmentRepository.GetDepartments());
+
+            OnPropertyChanged("DepartmentCollection");
         }
 
         #endregion

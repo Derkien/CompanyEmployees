@@ -16,6 +16,7 @@
     <sys:String x:Key="ButtonTextMoveEmployee">Move employee</sys:String>
     <sys:String x:Key="ButtonTextAddDepartment">Add department</sys:String>
     <sys:String x:Key="ButtonTextEditDepartment">Edit selected department</sys:String>
+    <sys:String x:Key="ButtonTextUpsertEmployee">Save employee</sys:String>
 
     <sys:String x:Key="TextBoxSelectedDepartment">Selected Department</sys:String>
     <sys:String x:Key="TextBoxDepartmentName">Name</sys:String>

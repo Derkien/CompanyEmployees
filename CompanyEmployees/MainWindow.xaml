@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewmodel="clr-namespace:CompanyEmployees.ViewModel"
+        xmlns:dataconvertor="clr-namespace:CompanyEmployees.DataConvertor"
         mc:Ignorable="d"
         Title="MainWindow" MinHeight="450" MaxHeight="450" MinWidth="800" MaxWidth="800" d:DesignHeight="450"
         x:Name="EmployeePage"
@@ -13,6 +14,7 @@
     </Window.DataContext>
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="Converter" />
+        <dataconvertor:EmployeeFormDataConverter x:Key="EmployeeFormDataConverter"/>
     </Window.Resources>
     <Grid 
         Margin="5"
@@ -24,8 +26,8 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
-            <RowDefinition Height="70*" />
-            <RowDefinition Height="30*" />
+            <RowDefinition Height="80*" />
+            <RowDefinition Height="20*" />
             <RowDefinition Height="50" />
         </Grid.RowDefinitions>
         <Label 
@@ -71,6 +73,7 @@
             Grid.RowSpan="2"
             />
         <StackPanel
+            Name="StackPanelEditEmployee"
             Visibility="{Binding DataContext.IsSelectedEmployeeEditable, ElementName=EmployeePage, 
                 Converter={StaticResource Converter}}"
             DataContext="{Binding SelectedEmployee}"
@@ -87,13 +90,31 @@
                 <Run Text="{Binding Id, Mode=OneWay}" FontWeight="Bold" FontSize="12"/>
             </TextBlock>
             <TextBlock Text="{StaticResource TextBoxEmployeeName}"/>
-            <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox Name="textBoxEmployeeName" Text="{Binding Name, UpdateSourceTrigger=Explicit}"/>
             <TextBlock Text="{StaticResource TextBoxEmployeeSurname}"/>
-            <TextBox Text="{Binding Surname, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox Name="textBoxEmployeeSurname" Text="{Binding Surname, UpdateSourceTrigger=Explicit}"/>
             <TextBlock Text="{StaticResource TextBoxEmployeeAge}" />
-            <TextBox Text="{Binding Age, UpdateSourceTrigger=PropertyChanged}"/>
+            <TextBox Name="textBoxEmployeeAge" Text="{Binding Age, UpdateSourceTrigger=Explicit}"/>
             <TextBlock Text="{StaticResource TextBoxEmployeeDepartment}" />
-            <TextBlock Text="{Binding Department, Mode=OneWay}"/>
+            <TextBlock Name="textBoxEmployeeDepartment" Text="{Binding Department, Mode=OneWay}"/>
+            <Button 
+                Command="{Binding DataContext.UpsertEmployeeCommand, ElementName=EmployeePage}"
+                Content="{StaticResource ButtonTextUpsertEmployee}"
+                Margin="0 10 0 0" 
+                Padding="5" 
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Width="Auto"
+                >
+                <Button.CommandParameter>
+                    <MultiBinding Converter="{StaticResource EmployeeFormDataConverter}">
+                        <Binding ElementName="textBoxEmployeeName" Path="Text" />
+                        <Binding ElementName="textBoxEmployeeSurname" Path="Text" />
+                        <Binding ElementName="textBoxEmployeeAge" Path="Text" />
+                        <Binding Path="Department" />
+                    </MultiBinding>
+                </Button.CommandParameter>
+            </Button>
         </StackPanel>
 
         <StackPanel

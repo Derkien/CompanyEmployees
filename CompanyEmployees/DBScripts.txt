@@ -1,0 +1,15 @@
+﻿CREATE TABLE [dbo].[Employees] (
+    [Id]         INT IDENTITY(1,1) NOT NULL,
+    [Name]       VARCHAR (50) NULL,
+    [Surname]    VARCHAR (50) NULL,
+    [Age]        SMALLINT     NULL,
+    [Department] INT          NOT NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC),
+    CONSTRAINT [FK_Employees_To_Departments] FOREIGN KEY ([Department]) REFERENCES [dbo].[Departments] ([Id])
+);
+
+CREATE TABLE [dbo].[Departments] (
+    [Id]   INT      IDENTITY(1,1)     NOT NULL,
+    [Name] VARCHAR (MAX) NULL,
+    PRIMARY KEY CLUSTERED ([Id] ASC)
+);
