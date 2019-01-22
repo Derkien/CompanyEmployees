@@ -3,11 +3,11 @@
 namespace CompanyEmployees
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for UpsertDepartmentWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class UpsertDepartmentWindow : Window
     {
-        public MainWindow()
+        public UpsertDepartmentWindow()
         {
             InitializeComponent();
         }
