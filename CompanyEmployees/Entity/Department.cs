@@ -11,7 +11,13 @@ namespace CompanyEmployees.Entity
             Name = name;
         }
 
-        public int Id { get { return GetHashCode(); } }
+        public Department(int id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
+
+        public int Id { get; }
         public string Name
         {
             get { return _name; }

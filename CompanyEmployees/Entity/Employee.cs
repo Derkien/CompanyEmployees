@@ -15,7 +15,16 @@
             Department = department;
         }
 
-        public int Id { get { return GetHashCode(); } }
+        public Employee(int id, string name, string surname, int age, Department department)
+        {
+            Id = id;
+            Name = name;
+            Surname = surname;
+            Age = age;
+            Department = department;
+        }
+
+        public int Id { get; }
         public string Name
         {
             get { return _name; }
